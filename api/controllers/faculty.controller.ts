@@ -49,3 +49,5 @@ router.post('/login', async (req,res)=>{
         throw new Error(`Internal server error : ${error}`);
     }
 })
+
+export default router;
