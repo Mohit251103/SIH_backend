@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post('/register', async (req,res)=>{
     try {
-        const user:any = req.body();
+        const user = req.body;
 
         const faculty = await Faculty.findOne({email:user.email});
         if(faculty){
@@ -26,7 +26,7 @@ router.post('/register', async (req,res)=>{
 
 router.post('/login', async (req,res)=>{
     try {
-        const user = req.body();
+        const user = req.body;
         const faculty = await Faculty.findOne({email:user.email});
         if(!faculty){
             return res.status(404).send("User does not exist");
@@ -36,8 +36,10 @@ router.post('/login', async (req,res)=>{
         if(!comparePass){
             return res.status(403).send("Incorrect credentials");
         }
+        
+        const data = {id:faculty._id};
 
-        const token = jwt.sign({id:faculty._id}, process.env.SECRET_KEY);
+        const token = jwt.sign(data, process.env.SECRET_KEY as string);
         res.cookie("token",token,{
             maxAge:24*60*60*1000,
             secure:false,

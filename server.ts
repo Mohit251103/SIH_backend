@@ -11,8 +11,11 @@ const port = process.env.PORT;
 
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(cors());
-app.use(cookieParser(process.env.SECRET_KEY, {maxAge:24*60*60*1000}));
+app.use(cookieParser(process.env.SECRET_KEY));
 dbconfig();
 
 app.use('/api/faculty/',facultyController);

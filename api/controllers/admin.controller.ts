@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post('/register', async (req,res)=>{
     try {
-        const user:any = req.body();
+        const user:any = req.body;
 
         const admin = await Admin.findOne({email:user.email});
         if(admin){
@@ -26,7 +26,7 @@ router.post('/register', async (req,res)=>{
 
 router.post('/login', async (req,res)=>{
     try {
-        const user = req.body();
+        const user = req.body;
         const admin = await Admin.findOne({email:user.email});
         if(!admin){
             return res.status(404).send("User does not exist");
@@ -37,7 +37,7 @@ router.post('/login', async (req,res)=>{
             return res.status(403).send("Incorrect credentials");
         }
 
-        const token = jwt.sign({id:admin._id}, process.env.SECRET_KEY);
+        const token = jwt.sign({id:admin._id}, process.env.SECRET_KEY as string);
         res.cookie("token",token,{
             maxAge:24*60*60*1000,
             secure:false,
