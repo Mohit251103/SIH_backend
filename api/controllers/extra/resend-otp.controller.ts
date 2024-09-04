@@ -8,6 +8,7 @@ router.get('/', async (req,res)=>{
     try {
         const {email} = req.body;
         const gen_otp = otp();
+        res.cookie("otp",gen_otp,{maxAge:5*60*1000, secure:false, httpOnly:true});
         sendmail(email as string, gen_otp as string);
         return res.status(200).send("Otp sent successfully");
     } catch (error) {
