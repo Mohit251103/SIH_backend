@@ -33,7 +33,7 @@ router.post('/register', async (req,res)=>{
     }
 })
 
-router.post('/verify', async (req,res) => {
+router.post('/verify-otp', async (req,res) => {
     try {
         const {otp,email} = req.body;
         const gen_otp = req.cookies.otp;
@@ -58,7 +58,7 @@ router.post('/verify', async (req,res) => {
     }
 })
 
-router.post('/login', async (req,res)=>{
+router.get('/login', async (req,res)=>{
     try {
         const user = req.body;
         const faculty = await Faculty.findOne({email:user.email});
@@ -71,7 +71,7 @@ router.post('/login', async (req,res)=>{
             return res.status(403).send("Incorrect credentials");
         }
         
-        const data = {id:faculty._id};
+        const data = {id:faculty._id, email:faculty.email};
 
         const token = jwt.sign(data, process.env.SECRET_KEY as string);
         res.cookie("token",token,{
@@ -97,5 +97,34 @@ router.get("/logout", (req,res)=>{
 })
 
 router.use('/resend-otp',resendOtpController);
+
+router.get("/verify", async (req,res)=>{
+    try {
+        const {email} = req.body;
+        const user = await Faculty.findOne({email});
+        if(!user){
+            res.status(404).send("User does not exist");
+        }
+
+        res.status(200).send("User exist");
+    } catch (error) {
+        throw new Error(error as string);
+    }
+})
+
+router.get("/reset-password", async (req,res)=>{
+    try {
+        const {email, password} = req.body;
+        const user = await Faculty.findOne({email});
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user!.password = hashedPassword;
+
+        await user!.save();
+        return res.status(200).send("Password reset successfully");
+    } catch (error) {
+        throw new Error(error as string);
+    }
+})
+
 
 export default router;
