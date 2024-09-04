@@ -14,8 +14,7 @@ const FacultyResourceSchema = new mongoose.Schema({
         unique:true
     },
     resources:{
-        type:[ResourceSchema],
-        required:true
+        type:[ResourceSchema]
     },
     createdAt:{
         type:String,
