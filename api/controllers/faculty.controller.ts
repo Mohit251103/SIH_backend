@@ -77,4 +77,14 @@ router.post('/login', async (req,res)=>{
     }
 })
 
+router.get("/logout", (req,res)=>{
+    try {
+        res.clearCookie("token");
+        return res.status(200).send("logged out successfully");
+    } catch (error) {
+        throw new Error(error as string);
+    }
+    
+})
+
 export default router;
