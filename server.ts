@@ -5,6 +5,7 @@ import dbconfig from "./utils/dbconfig";
 import cookieParser from "cookie-parser";
 import facultyController from "./api/controllers/faculty.controller";
 import adminController from "./api/controllers/admin.controller";
+import facultyResourceController from "./api/controllers/resources/faculty.controller";
 
 dotenv.config({});
 const port = process.env.PORT;
@@ -18,8 +19,9 @@ app.use(cors());
 app.use(cookieParser(process.env.SECRET_KEY));
 dbconfig();
 
-app.use('/api/faculty/',facultyController);
-app.use('/api/admin/',adminController);
+app.use('/api/faculty/auth',facultyController);
+app.use('/api/admin/auth',adminController);
+app.use('/api/faculty/resources',facultyResourceController);
 
 app.listen(port,()=>{
     console.log(`App is running on port : ${port}`);
