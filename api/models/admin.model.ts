@@ -17,6 +17,10 @@ const AdminSchema = new mongoose.Schema({
     instituteId:{
         type:String,
         required:true
+    },
+    isverified:{
+        type:Boolean,
+        default:false
     }
 })
 

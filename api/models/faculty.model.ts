@@ -21,6 +21,10 @@ const FacultySchema = new mongoose.Schema({
     department:{
         type:String,
         required:true
+    },
+    isverified:{
+        type:Boolean,
+        default:false
     }
 })
 
