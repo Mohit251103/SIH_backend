@@ -25,6 +25,10 @@ const FacultySchema = new mongoose.Schema({
     isverified:{
         type:Boolean,
         default:false
+    },
+    isfirsttime:{
+        type:Boolean,
+        default:true
     }
 })
 

@@ -8,76 +8,91 @@ import resendOtpController from "../controllers/extra/resend-otp.controller";
 
 const router = express.Router();
 
-router.post('/register', async (req,res)=>{
+router.post('/register', async (req, res) => {
     try {
         const user = req.body;
-
-        const faculty = await Faculty.findOne({email:user.email});
-        if(faculty){
+        console.log(user);
+        const faculty = await Faculty.findOne({ email: user.email as string });
+        if (faculty) {
             return res.status(409).send("User already exist");
         }
 
-        const hashedPassword = await bcrypt.hash(user.password, 10);
+        const hashedPassword = await bcrypt.hash(user.password as string, 10);
         user.password = hashedPassword;
 
-        await Faculty.create(user);
+        await Faculty.create({ ...user, instituteId: user.instituteId as string, });
 
         const gen_otp = otp()
-        res.cookie("otp",gen_otp,{maxAge:5*60*1000, secure:false, httpOnly:true});
-        sendmail(user.email, gen_otp);
+        res.cookie("otp", gen_otp, { maxAge: 5 * 60 * 1000, secure: false, httpOnly: true });
+        await sendmail(user.email, gen_otp as string);
 
         res.status(200).send("Verification code sent");
-        
-    } catch (error:any) {
-        throw new Error(`Internal server error : ${error}`);
+
+    } catch (error: any) {
+        throw new Error(error as string);
     }
 })
 
-router.post('/verify-otp', async (req,res) => {
+router.post('/verify-otp', async (req, res) => {
     try {
-        const {otp,email} = req.body;
+        const { otp, email } = req.body;
+
         const gen_otp = req.cookies.otp;
-        if(!gen_otp){
+        res.clearCookie("otp");
+        if (!gen_otp) {
             return res.status(408).send("Time out. Generate new OTP. ");
         }
 
-        if(otp != gen_otp){
+        if (otp != gen_otp) {
             return res.status(400).send("Wrong OTP");
         }
 
-        const user = await Faculty.findOne({email});
-        if(!user){
-            res.status(404).send("User does not exist");
+        console.log(req.cookies.email);
+        let user: any;
+        if (!email) {
+            user = await Faculty.findOne({ email: req.cookies.email });
+        }
+        else {
+            user = await Faculty.findOne({ email });
         }
 
+        if (!user) {
+            res.status(404).send("User does not exist");
+        }
         user!.isverified = true;
         await user!.save();
+        if (req.cookies.email) {
+            res.clearCookie("email");
+        }
+
+        user.isfirsttime = false;
+        await user.save();
         return res.status(200).send("User verified successfully.");
     } catch (error) {
         throw new Error(error as string);
     }
 })
 
-router.post('/login', async (req,res)=>{
+router.post('/login', async (req, res) => {
     try {
         const user = req.body;
-        const faculty = await Faculty.findOne({email:user.email});
-        if(!faculty){
+        const faculty = await Faculty.findOne({ email: user.email });
+        if (!faculty) {
             return res.status(404).send("User does not exist");
         }
 
         const comparePass = await bcrypt.compare(user.password, faculty.password);
-        if(!comparePass){
+        if (!comparePass) {
             return res.status(403).send("Incorrect credentials");
         }
-        
-        const data = {id:faculty._id, email:faculty.email};
+
+        const data = { id: faculty._id, email: faculty.email };
 
         const token = jwt.sign(data, process.env.SECRET_KEY as string);
-        res.cookie("token",token,{
-            maxAge:24*60*60*1000,
-            secure:false,
-            httpOnly:true
+        res.cookie("token", token, {
+            maxAge: 24 * 60 * 60 * 1000,
+            secure: false,
+            httpOnly: true
         })
         res.status(200).send("Logged in successfully");
 
@@ -86,36 +101,39 @@ router.post('/login', async (req,res)=>{
     }
 })
 
-router.get("/logout", (req,res)=>{
+router.get("/logout", (req, res) => {
     try {
         res.clearCookie("token");
         return res.status(200).send("logged out successfully");
     } catch (error) {
         throw new Error(error as string);
     }
-    
+
 })
 
-router.use('/resend-otp',resendOtpController);
+router.use('/resend-otp', resendOtpController);
 
-router.post("/verify", async (req,res)=>{
+router.post("/verify", async (req, res) => {
     try {
-        const {email} = req.body;
-        const user = await Faculty.findOne({email});
-        if(!user){
-            res.status(404).send("User does not exist");
+        const { email } = req.body;
+        const user = await Faculty.findOne({ email });
+        if (!user) {
+            return res.status(404).send("User does not exist");
         }
 
-        res.status(200).send("User exist");
+        if (user!.isverified) {
+            return res.status(200).send("User verified");
+        }
+        return res.status(403).send("Not verified")
     } catch (error) {
         throw new Error(error as string);
     }
 })
 
-router.post("/reset-password", async (req,res)=>{
+router.post("/reset-password", async (req, res) => {
     try {
-        const {email, password} = req.body;
-        const user = await Faculty.findOne({email});
+        const { email, password } = req.body;
+        const user = await Faculty.findOne({ email });
         const hashedPassword = await bcrypt.hash(password, 10);
         user!.password = hashedPassword;
 
