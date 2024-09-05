@@ -24,6 +24,7 @@ router.post('/register', async (req, res) => {
 
         const gen_otp = otp()
         res.cookie("otp", gen_otp, { maxAge: 5 * 60 * 1000, secure: false, httpOnly: true });
+        res.cookie("email",user.email,{secure:false})
         await sendmail(user.email, gen_otp as string);
 
         res.status(200).send("Verification code sent");
