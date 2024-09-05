@@ -11,7 +11,6 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
     try {
         const user = req.body;
-        console.log(user);
         const faculty = await Faculty.findOne({ email: user.email as string });
         if (faculty) {
             return res.status(409).send("User already exist");
@@ -25,7 +24,7 @@ router.post('/register', async (req, res) => {
         const gen_otp = otp()
         res.cookie("otp", gen_otp, { maxAge: 5 * 60 * 1000, secure: false, httpOnly: true });
         res.cookie("email",user.email,{secure:false})
-        await sendmail(user.email, gen_otp as string);
+        sendmail(user.email, gen_otp as string);
 
         res.status(200).send("Verification code sent");
 
@@ -48,7 +47,6 @@ router.post('/verify-otp', async (req, res) => {
             return res.status(400).send("Wrong OTP");
         }
 
-        console.log(req.cookies.email);
         let user: any;
         if (!email) {
             user = await Faculty.findOne({ email: req.cookies.email });
@@ -67,7 +65,6 @@ router.post('/verify-otp', async (req, res) => {
         }
 
         user.isfirsttime = false;
-        await user.save();
         return res.status(200).send("User verified successfully.");
     } catch (error) {
         throw new Error(error as string);

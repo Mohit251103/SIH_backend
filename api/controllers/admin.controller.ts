@@ -23,7 +23,8 @@ router.post('/register', async (req,res)=>{
 
         const gen_otp = otp()
         res.cookie("otp",gen_otp,{maxAge:5*60*1000, secure:false, httpOnly:true});
-        sendmail(user.email, gen_otp);
+        res.cookie("email",user.email,{secure:false})
+        sendmail(user.email, gen_otp as string);
 
         res.status(200).send("Verification code sent");
         
@@ -44,13 +45,23 @@ router.post('/verify-otp', async (req,res) => {
             return res.status(400).send("Wrong OTP");
         }
 
-        const user = await Admin.findOne({email});
-        if(!user){
-            res.status(404).send("User does not exist");
+        let user:any 
+        if (!email) {
+            user = await Admin.findOne({ email: req.cookies.email });
+        }
+        else {
+            user = await Admin.findOne({ email });
         }
 
+        if (!user) {
+            res.status(404).send("User does not exist");
+        }
         user!.isverified = true;
         await user!.save();
+        if (req.cookies.email) {
+            res.clearCookie("email");
+        }
+
         return res.status(200).send("User verified successfully.");
     } catch (error) {
         throw new Error(error as string);
@@ -103,7 +114,10 @@ router.post("/verify", async (req,res)=>{
             res.status(404).send("User does not exist");
         }
 
-        res.status(200).send("User exist");
+        if (user!.isverified) {
+            return res.status(200).send("User verified");
+        }
+        return res.status(403).send("Not verified")
     } catch (error) {
         throw new Error(error as string);
     }
