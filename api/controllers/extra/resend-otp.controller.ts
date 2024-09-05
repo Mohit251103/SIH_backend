@@ -4,7 +4,7 @@ import sendmail from "../../../utils/sendEmail";
 
 const router = express.Router();
 
-router.get('/', async (req,res)=>{
+router.post('/', async (req,res)=>{
     try {
         const {email} = req.body;
         const gen_otp = otp();

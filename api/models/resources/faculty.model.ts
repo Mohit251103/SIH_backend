@@ -6,6 +6,8 @@ const d = date.getDate();
 const m = date.getMonth();
 const y = date.getFullYear();
 
+// *** NO USE RIGHT NOW. SWITCHED TO ONLY RESOURCE MODEL ***
+
 const FacultyResourceSchema = new mongoose.Schema({
     //faculty id
     fid:{

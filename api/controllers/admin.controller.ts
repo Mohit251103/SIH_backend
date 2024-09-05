@@ -57,7 +57,7 @@ router.post('/verify-otp', async (req,res) => {
     }
 })
 
-router.get('/login', async (req,res)=>{
+router.post('/login', async (req,res)=>{
     try {
         const user = req.body;
         const admin = await Admin.findOne({email:user.email});
@@ -95,7 +95,7 @@ router.get("/logout", (req,res)=>{
 
 router.use('/resend-otp',resendOtpController);
 
-router.get("/verify", async (req,res)=>{
+router.post("/verify", async (req,res)=>{
     try {
         const {email} = req.body;
         const user = await Admin.findOne({email});
@@ -109,7 +109,7 @@ router.get("/verify", async (req,res)=>{
     }
 })
 
-router.get("/reset-password", async (req,res)=>{
+router.post("/reset-password", async (req,res)=>{
     try {
         const {email, password} = req.body;
         const user = await Admin.findOne({email});
